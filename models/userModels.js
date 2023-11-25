@@ -9,10 +9,13 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
-
   role: {
     type: String,
     default: "user",
+  },
+  shopId: {
+    type: Schema.Types.ObjectId,
+    ref: "CreateShop",
   },
 });
 const User = mongoose.model("User", userSchema);
