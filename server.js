@@ -7,7 +7,12 @@ const Routes = require("./routes");
 const dbConnect = require("./utils/dbConfige");
 
 //middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.use(Routes);

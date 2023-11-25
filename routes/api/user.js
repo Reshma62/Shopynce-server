@@ -1,6 +1,6 @@
 const express = require("express");
 const _ = express.Router();
-_.get("/", (req, res) => {
-  res.send({ message: "successfully" });
-});
+const { createUser } = require("../../controller/UserController");
+_.post("/create-user", createUser);
 module.exports = _;
+// /user/create-user
