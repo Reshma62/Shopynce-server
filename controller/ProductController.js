@@ -112,9 +112,15 @@ const updateProduct = async (req, res) => {
   });
   res.send(product);
 };
+const deleteProduct = async (req, res) => {
+  const id = req.params.id;
+  cosnt = await Product.findOneAndDelete({ _id: id });
+  res.send({ success: "Product deleted successfully" });
+};
 module.exports = {
   addProduct,
   getAllProduct,
   getSigleProduct,
   updateProduct,
+  deleteProduct,
 };
