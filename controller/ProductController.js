@@ -82,13 +82,39 @@ const getAllProduct = async (req, res) => {
   res.send(allProduct);
 };
 const getSigleProduct = async (req, res) => {
-  const id = req.params.id;
-
+  const id = await req.query?.id;
   const product = await Product.findOne({ _id: id });
+  res.send(product);
+};
+const updateProduct = async (req, res) => {
+  const id = req.params.id;
+  const {
+    product_name,
+    product_location,
+    product_desc,
+    quantity,
+    production_cost,
+    profit,
+    discount,
+  } = req.body;
+  const updatedProduct = {
+    name: product_name,
+    location: product_location,
+    product_description: product_desc,
+    product_image: `/uploads/${req?.file?.filename}`,
+    quantity,
+    production_cost,
+    profit,
+    discount,
+  };
+  const product = await Product.findOneAndUpdate({ _id: id }, updatedProduct, {
+    new: true,
+  });
   res.send(product);
 };
 module.exports = {
   addProduct,
   getAllProduct,
   getSigleProduct,
+  updateProduct,
 };
