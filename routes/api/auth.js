@@ -1,8 +1,12 @@
 const express = require("express");
-const { getUser } = require("../../controller/AuthController");
+const {
+  getUser,
+  createToken,
+  deleteToken,
+} = require("../../controller/AuthController");
 const _ = express.Router();
-_.get("/access-tokek", (req, res) => {
-  res.send({ message: "access token successfully" });
-});
+
 _.get("/get-user", getUser);
+_.post("/create-token", createToken);
+_.post("/delete-token", deleteToken);
 module.exports = _;

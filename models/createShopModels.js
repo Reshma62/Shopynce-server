@@ -34,6 +34,13 @@ const createShopSchema = new Schema({
     ref: "User",
     // required: true,
   },
+  products: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
+
   cretedAt: {
     type: Date,
     default: Date.now(),

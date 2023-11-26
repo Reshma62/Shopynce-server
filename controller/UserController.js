@@ -1,4 +1,5 @@
 const CreateShop = require("../models/createShopModels");
+const Product = require("../models/productModels");
 const User = require("../models/userModels");
 
 const createUser = async (req, res) => {
@@ -24,19 +25,18 @@ const createOwnShop = async (req, res) => {
   console.log("req?.file", req?.file);
   const exitingUser = await User.findOne({ email });
 
-  /*  const existingShop = await CreateShop.findOne({ email });
+  const existingShop = await CreateShop.findOne({ email });
   if (existingShop) {
     return res.send({ error: "Only One Shop Created at a time" });
-  } */
+  }
   const createShop = new CreateShop({
     name,
     location,
     shop_description,
-    shop_logo: `/upload/${req?.file?.filename}`,
+    shop_logo: `/uploads/${req?.file?.filename}`,
     email,
     userName,
     userId: exitingUser._id,
-    // productLimit,
   });
   createShop.save();
   // res.send({ success: "Shop successfully created" });
