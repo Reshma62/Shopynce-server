@@ -132,7 +132,6 @@ const deleteProduct = async (req, res) => {
 };
 const addTocheckOut = async (req, res) => {
   const { productId } = req.body;
-  console.log(productId);
   const isExist = await CheckOUt.findOne({ productId });
   if (isExist) {
     return res.send({ error: "Product Already Added the CheckOut page" });
@@ -145,11 +144,19 @@ const addTocheckOut = async (req, res) => {
 };
 const getCheckOutProduct = async (req, res) => {
   const userEmail = req.user?.email;
-  const checkoutProducts = await CheckOUt.find({}).populate({
-    path: "productId",
-    match: { userEmail: userEmail },
-  });
-  res.send(checkoutProducts);
+  const checkoutProducts = await CheckOUt.find({})
+    .populate({
+      path: "productId",
+      match: { userEmail: userEmail },
+    })
+    .exec();
+
+  // Filter out documents where productId is null
+  const filteredProducts = checkoutProducts.filter(
+    (checkout) => checkout.productId !== null
+  );
+
+  res.send(filteredProducts);
 };
 module.exports = {
   addProduct,

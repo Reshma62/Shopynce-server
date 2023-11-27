@@ -11,7 +11,7 @@ const verifiToken = require("./middleware/verifiToken");
 //middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://shopynce.web.app"],
     credentials: true,
   })
 );
