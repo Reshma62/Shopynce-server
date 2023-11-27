@@ -6,6 +6,8 @@ const {
   getSigleProduct,
   updateProduct,
   deleteProduct,
+  addTocheckOut,
+  getCheckOutProduct,
 } = require("../../controller/ProductController");
 const upload = require("../../middleware/uploadImage");
 const verifiToken = require("../../middleware/verifiToken");
@@ -18,5 +20,7 @@ _.put(
   updateProduct
 );
 _.post("/add-product", upload.single("product_image"), verifiToken, addProduct);
+_.get("/get-checkout", verifiToken, getCheckOutProduct);
+_.post("/add-to-checkout", verifiToken, addTocheckOut);
 _.delete("/delete-product/:id", verifiToken, deleteProduct);
 module.exports = _;

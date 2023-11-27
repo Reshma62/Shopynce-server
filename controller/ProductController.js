@@ -1,6 +1,8 @@
+const mongoose = require("mongoose");
 const CreateShop = require("../models/createShopModels");
 const Product = require("../models/productModels");
 const User = require("../models/userModels");
+const CheckOUt = require("../models/checkOutModels");
 
 const addProduct = async (req, res) => {
   try {
@@ -78,9 +80,12 @@ const addProduct = async (req, res) => {
 };
 const getAllProduct = async (req, res) => {
   const queryEmail = req.user?.email;
-  const allProduct = await Product.find({ userEmail: queryEmail });
+  let query = { userEmail: queryEmail };
+
+  const allProduct = await Product.find(query);
   res.send(allProduct);
 };
+
 const getSigleProduct = async (req, res) => {
   const id = await req.query?.id;
   const product = await Product.findOne({ _id: id });
@@ -114,8 +119,37 @@ const updateProduct = async (req, res) => {
 };
 const deleteProduct = async (req, res) => {
   const id = req.params.id;
-  cosnt = await Product.findOneAndDelete({ _id: id });
+  const productFind = await Product.findById(id);
+  const shop = await CreateShop.findById(productFind.shop_by_id);
+  console.log("shop", shop);
+  const product = await Product.findOneAndDelete({ _id: id });
+  await CreateShop.findByIdAndUpdate(
+    { _id: shop._id },
+    { $pull: { products: id } },
+    { new: true }
+  );
   res.send({ success: "Product deleted successfully" });
+};
+const addTocheckOut = async (req, res) => {
+  const { productId } = req.body;
+  console.log(productId);
+  const isExist = await CheckOUt.findOne({ productId });
+  if (isExist) {
+    return res.send({ error: "Product Already Added the CheckOut page" });
+  }
+  const checkout = new CheckOUt({
+    productId,
+  });
+  checkout.save();
+  res.send(checkout);
+};
+const getCheckOutProduct = async (req, res) => {
+  const userEmail = req.user?.email;
+  const checkoutProducts = await CheckOUt.find({}).populate({
+    path: "productId",
+    match: { userEmail: userEmail },
+  });
+  res.send(checkoutProducts);
 };
 module.exports = {
   addProduct,
@@ -123,4 +157,6 @@ module.exports = {
   getSigleProduct,
   updateProduct,
   deleteProduct,
+  addTocheckOut,
+  getCheckOutProduct,
 };

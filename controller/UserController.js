@@ -47,6 +47,7 @@ const createOwnShop = async (req, res) => {
     { new: true }
   );
 };
+
 module.exports = {
   createUser,
   createOwnShop,
