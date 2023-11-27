@@ -2,6 +2,7 @@ const CreateShop = require("../models/createShopModels");
 const Product = require("../models/productModels");
 const User = require("../models/userModels");
 
+// create a new user
 const createUser = async (req, res) => {
   const { name, email } = req.body;
   if (!name) {
@@ -20,6 +21,8 @@ const createUser = async (req, res) => {
   user.save();
   res.send({ success: "user successfully created" });
 };
+
+// create shop
 const createOwnShop = async (req, res) => {
   const { name, location, shop_description, email, userName } = await req.body;
   console.log("req?.file", req?.file);
@@ -48,6 +51,7 @@ const createOwnShop = async (req, res) => {
   );
 };
 
+// all controllers are exports
 module.exports = {
   createUser,
   createOwnShop,

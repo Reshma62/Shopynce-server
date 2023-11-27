@@ -8,9 +8,12 @@ const {
   deleteProduct,
   addTocheckOut,
   getCheckOutProduct,
+  addInvoice,
 } = require("../../controller/ProductController");
 const upload = require("../../middleware/uploadImage");
 const verifiToken = require("../../middleware/verifiToken");
+
+// routes for Product manage
 _.get("/get-all-product", verifiToken, getAllProduct);
 _.get("/get-single-product", verifiToken, getSigleProduct);
 _.put(
@@ -20,7 +23,13 @@ _.put(
   updateProduct
 );
 _.post("/add-product", upload.single("product_image"), verifiToken, addProduct);
+_.delete("/delete-product/:id", verifiToken, deleteProduct);
+
+// check out route
 _.get("/get-checkout", verifiToken, getCheckOutProduct);
 _.post("/add-to-checkout", verifiToken, addTocheckOut);
-_.delete("/delete-product/:id", verifiToken, deleteProduct);
+
+// Invoice or get paid
+_.post("/invoice", verifiToken, addInvoice);
+
 module.exports = _;

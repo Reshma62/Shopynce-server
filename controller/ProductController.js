@@ -3,7 +3,9 @@ const CreateShop = require("../models/createShopModels");
 const Product = require("../models/productModels");
 const User = require("../models/userModels");
 const CheckOUt = require("../models/checkOutModels");
+const GetPaid = require("../models/getPaidModels");
 
+// Add product routes
 const addProduct = async (req, res) => {
   try {
     const {
@@ -78,6 +80,8 @@ const addProduct = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+// get all products for logged in user
 const getAllProduct = async (req, res) => {
   const queryEmail = req.user?.email;
   let query = { userEmail: queryEmail };
@@ -86,11 +90,14 @@ const getAllProduct = async (req, res) => {
   res.send(allProduct);
 };
 
+//get single product
 const getSigleProduct = async (req, res) => {
   const id = await req.query?.id;
   const product = await Product.findOne({ _id: id });
   res.send(product);
 };
+
+//Update single product
 const updateProduct = async (req, res) => {
   const id = req.params.id;
   const {
@@ -117,6 +124,8 @@ const updateProduct = async (req, res) => {
   });
   res.send(product);
 };
+
+// Delete a product
 const deleteProduct = async (req, res) => {
   const id = req.params.id;
   const productFind = await Product.findById(id);
@@ -130,6 +139,8 @@ const deleteProduct = async (req, res) => {
   );
   res.send({ success: "Product deleted successfully" });
 };
+
+// Add product to checkout
 const addTocheckOut = async (req, res) => {
   const { productId } = req.body;
   const isExist = await CheckOUt.findOne({ productId });
@@ -142,6 +153,8 @@ const addTocheckOut = async (req, res) => {
   checkout.save();
   res.send(checkout);
 };
+
+// Get the product from the checkout
 const getCheckOutProduct = async (req, res) => {
   const userEmail = req.user?.email;
   const checkoutProducts = await CheckOUt.find({})
@@ -158,6 +171,90 @@ const getCheckOutProduct = async (req, res) => {
 
   res.send(filteredProducts);
 };
+
+// Add product to getpaid  or Invoice route
+
+const createInvoice = async (checkoutProducts) => {
+  const newInvoice = new GetPaid({ checkOutsProductId: checkoutProducts });
+  await newInvoice.save();
+  return newInvoice;
+};
+
+const updateProductSales = async (checkoutProducts) => {
+  try {
+    for (const checkoutProduct of checkoutProducts) {
+      const productId = checkoutProduct.productId._id;
+      let quantity = parseInt(checkoutProduct.productId.quantity);
+      let saleCount = parseInt(checkoutProduct.productId.sale_count);
+
+      if (quantity > 0) {
+        await Product.findByIdAndUpdate(
+          productId,
+          {
+            $set: { sale_count: saleCount + 1, quantity: quantity - 1 },
+          },
+          { new: true }
+        );
+      }
+    }
+  } catch (error) {
+    console.error("Error updating product sales:", error);
+    throw error;
+  }
+};
+
+const clearCheckoutCollection = async (userEmail) => {
+  const checkoutProducts = await CheckOUt.find({})
+    .populate({
+      path: "productId",
+      match: { userEmail: userEmail },
+    })
+    .exec();
+
+  // Perform any additional logic or processing if needed
+
+  // Clear the checkout collection
+  await CheckOUt.deleteMany({ userEmail: userEmail });
+
+  // Return the filtered checkout products if needed
+  return checkoutProducts;
+};
+
+const addInvoice = async (req, res) => {
+  try {
+    const userEmail = req?.user?.email;
+    const checkoutProducts = await CheckOUt.find({})
+      .populate({
+        path: "productId",
+        match: { userEmail: userEmail },
+      })
+      .exec();
+
+    // Filter out documents where productId is null
+    const filteredProducts = checkoutProducts.filter(
+      (checkout) => checkout.productId !== null
+    );
+
+    const newInvoice = createInvoice(filteredProducts);
+
+    await updateProductSales(filteredProducts);
+
+    // Extract the IDs of the CheckOUt documents to be deleted
+    const checkoutIdsToDelete = filteredProducts.map(
+      (checkout) => checkout._id
+    );
+
+    // Clear the checkout collection based on the IDs
+    await CheckOUt.deleteMany({ _id: { $in: checkoutIdsToDelete } });
+
+    res.send({ success: "Payment successful", invoice: newInvoice });
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+// exports all controllers
 module.exports = {
   addProduct,
   getAllProduct,
@@ -166,4 +263,5 @@ module.exports = {
   deleteProduct,
   addTocheckOut,
   getCheckOutProduct,
+  addInvoice,
 };
