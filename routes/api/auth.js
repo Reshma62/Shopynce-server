@@ -4,9 +4,10 @@ const {
   createToken,
   deleteToken,
 } = require("../../controller/AuthController");
+const verifiToken = require("../../middleware/verifiToken");
 const _ = express.Router();
 
-_.get("/get-user", getUser);
+_.get("/get-user", verifiToken, getUser);
 
 // token routes
 _.post("/create-token", createToken);

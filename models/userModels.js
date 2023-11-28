@@ -13,6 +13,9 @@ const userSchema = new Schema({
     type: String,
     default: "user",
   },
+  income: {
+    type: String,
+  },
   shopId: {
     type: Schema.Types.ObjectId,
     ref: "CreateShop",

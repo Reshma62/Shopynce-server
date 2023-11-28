@@ -29,6 +29,10 @@ const createShopSchema = new Schema({
     type: Number,
     default: 3,
   },
+  subscribePlan: {
+    type: String,
+    default: "none",
+  },
   userId: {
     type: Schema.Types.ObjectId,
     ref: "User",
