@@ -17,8 +17,18 @@ const getAdminInfo = async (req, res) => {
   }
 };
 const getAllUser = async (req, res) => {
-  const adminInfo = await User.find({}).populate("shopId");
-  return res.send(adminInfo);
+  const { page, size } = req?.query;
+  const pageNumber = parseInt(page);
+  const limit = parseInt(size);
+  const skip = limit * pageNumber;
+  console.log("pageNumber", pageNumber);
+  console.log("limit", limit);
+  console.log("skip", skip);
+  const userInfo = await User.find({})
+    .populate("shopId")
+    .skip(skip)
+    .limit(limit);
+  return res.send(userInfo);
 };
 const sendEmailPromotion = async (req, res) => {
   const email = req?.query?.email;

@@ -251,11 +251,32 @@ const addSoldProducts = async (req, res) => {
 // Get Sold products
 const getSoldProducts = async (req, res) => {
   const email = req.params.email;
-  const soldProducts = await SoldProduct.find({ userEmail: email }).populate(
-    "productId"
-  );
+  const page = parseInt(req?.query?.page);
+  const size = parseInt(req?.query?.size);
+  const skip = page * size;
+
+  const sortDirection = req.query.sort === "asc" ? 1 : -1;
+
+  const soldProducts = await SoldProduct.find({ userEmail: email })
+    .populate({
+      path: "productId",
+    })
+    .skip(skip)
+    .limit(size)
+    .sort({ sale_date: sortDirection });
+
   res.send(soldProducts);
 };
+
+// get all sold products  count
+const getAllSoldCount = async (req, res) => {
+  const email = req?.query?.email;
+  const count = await SoldProduct.countDocuments({ userEmail: email });
+
+  res.send({ count });
+};
+
+// calculate the total cost of a product
 const calculateTotal = async (req, res) => {
   const { email } = req.params;
 
@@ -325,4 +346,5 @@ module.exports = {
   addSoldProducts,
   getSoldProducts,
   calculateTotal,
+  getAllSoldCount,
 };

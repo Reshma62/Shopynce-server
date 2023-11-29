@@ -13,6 +13,7 @@ const {
   getSoldProducts,
   calculateTotal,
   addToCart,
+  getAllSoldCount,
 } = require("../../controller/ProductController");
 const upload = require("../../middleware/uploadImage");
 const verifiToken = require("../../middleware/verifiToken");
@@ -40,7 +41,8 @@ _.post("/add-to-cart", verifiToken, addToCart);
 // Invoice or sale products
 _.get("/get-sold-products/:email", verifiToken, getSoldProducts);
 _.post("/sold-products", verifiToken, addSoldProducts);
-_.get("/sold-products", soldProducts);
+_.get("/sold-products", verifiToken, soldProducts);
+_.get("/sold-count", verifiToken, getAllSoldCount);
 
 // _.get("/sold-products-all", getSoldProductsDetails);
 _.get("/calculate-totals/:email", calculateTotal);
