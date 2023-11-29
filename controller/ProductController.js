@@ -4,6 +4,9 @@ const Product = require("../models/productModels");
 const User = require("../models/userModels");
 const CheckOUt = require("../models/checkOutModels");
 const GetPaid = require("../models/getPaidModels");
+const Sales = require("../models/salesModels");
+const Cart = require("../models/cartModels");
+const SoldProduct = require("../models/soldProductModels");
 
 // Add product routes
 const addProduct = async (req, res) => {
@@ -144,117 +147,6 @@ const deleteProduct = async (req, res) => {
   res.send({ success: "Product deleted successfully" });
 };
 
-// Add product to checkout
-const addTocheckOut = async (req, res) => {
-  const { productId } = req.body;
-  const isExist = await CheckOUt.findOne({ productId });
-  if (isExist) {
-    return res.send({ error: "Product Already Added the CheckOut page" });
-  }
-  const checkout = new CheckOUt({
-    productId,
-  });
-  checkout.save();
-  res.send(checkout);
-};
-
-// Get the product from the checkout
-const getCheckOutProduct = async (req, res) => {
-  const userEmail = req.user?.email;
-  const checkoutProducts = await CheckOUt.find({})
-    .populate({
-      path: "productId",
-      match: { userEmail: userEmail },
-    })
-    .exec();
-
-  // Filter out documents where productId is null
-  const filteredProducts = checkoutProducts.filter(
-    (checkout) => checkout.productId !== null
-  );
-
-  res.send(filteredProducts);
-};
-
-// Add product to getpaid  or Invoice route
-
-const createInvoice = async (checkOutsProductId, userEmail) => {
-  const isExitsCollection = await GetPaid.findOne({ userEmail });
-  /* if (isExitsCollection) {
-    // If the document exists, update it
-    return await GetPaid.findOneAndUpdate(
-      { userEmail },
-      { $push: { checkOutsProductId: checkOutsProductId } },
-      { new: true }
-    );
-  } else { */
-  // If the document doesn't exist, create a new one
-  const newInvoice = new GetPaid({
-    checkOutsProductId,
-    userEmail,
-  });
-  await newInvoice.save();
-  return newInvoice;
-  // }
-};
-
-const updateProductSales = async (checkoutProducts) => {
-  try {
-    for (const checkoutProduct of checkoutProducts) {
-      const productId = checkoutProduct.productId._id;
-      let quantity = parseInt(checkoutProduct.productId.quantity);
-      let saleCount = parseInt(checkoutProduct.productId.sale_count);
-
-      if (quantity > 0) {
-        await Product.findByIdAndUpdate(
-          productId,
-          {
-            $set: { sale_count: saleCount + 1, quantity: quantity - 1 },
-          },
-          { new: true }
-        );
-      }
-    }
-  } catch (error) {
-    console.error("Error updating product sales:", error);
-    throw error;
-  }
-};
-
-const addInvoice = async (req, res) => {
-  try {
-    const userEmail = req?.user?.email;
-    const checkoutProducts = await CheckOUt.find({})
-      .populate({
-        path: "productId",
-        match: { userEmail: userEmail },
-      })
-      .exec();
-
-    // Filter out documents where productId is null
-    const filteredProducts = checkoutProducts.filter(
-      (checkout) => checkout.productId !== null
-    );
-    const productId = filteredProducts.map((product) => product.productId);
-    const newInvoice = createInvoice(productId, userEmail);
-
-    await updateProductSales(filteredProducts);
-
-    // Extract the IDs of the CheckOUt documents to be deleted
-    const checkoutIdsToDelete = filteredProducts.map(
-      (checkout) => checkout._id
-    );
-
-    // Clear the checkout collection based on the IDs
-    // await CheckOUt.deleteMany({ _id: { $in: checkoutIdsToDelete } });
-
-    res.send({ success: "Payment successful", invoice: newInvoice });
-  } catch (error) {
-    console.error("Error processing payment:", error);
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-};
-
 const soldProducts = async (req, res) => {
   const userEmail = req?.query?.email;
   const perPage = parseInt(req?.query?.perPage);
@@ -271,37 +163,155 @@ const soldProducts = async (req, res) => {
   res.send(soldProduct);
 };
 
-async function getSoldProductsDetails(req, res) {
-  try {
-    const { limit, skip } = req?.query;
-    const limitValue = parseInt(limit) || 10; // Default to 10 if not provided
-    const skipValue = parseInt(skip) || 0;
-    const orders = await GetPaid.find()
-      .populate("checkOutsProductId")
-      .limit(limitValue)
-      .skip(skipValue);
+// Add to cart items
+const addToCart = async (req, res) => {
+  const { email, productId, quantity } = req.body;
+  // Check if the user already has a cart
+  let cart = await Cart.findOne({ email });
 
-    // Extract and format sold product details
-    const soldProductsDetails = orders.reduce((acc, order) => {
-      order.checkOutsProductId.forEach((product) => {
-        acc.push({
-          name: product.name,
-          quantity: product.quantity, // Assuming you have a quantity field in your products array
-          profit: product.profitAmount, // Assuming you have a profit field in your products array
-          soldDate: order.createdAt,
-        });
-      });
-      return acc;
-      return order;
-    }, []);
-
-    res.status(200).json(soldProductsDetails);
-  } catch (error) {
-    console.error("Error getting sold products details:", error);
-    res.status(500).json({ error: "Internal Server Error" });
+  // If the user doesn't have a cart, create a new one
+  if (!cart) {
+    cart = await Cart.create({ email });
   }
-}
+  const existingItem = cart.items.find((item) =>
+    item.productId.equals(productId)
+  );
 
+  if (existingItem) {
+    // If the product is already in the cart, update the quantity
+    existingItem.quantity += quantity;
+  } else {
+    // If the product is not in the cart, add a new item
+    cart.items.push({ productId, quantity });
+  }
+
+  // Save the updated cart
+  await cart.save();
+  res
+    .status(200)
+    .json({ message: "Item added to the cart successfully", cart });
+};
+
+// get cart data
+const getCartItems = async (req, res) => {
+  const email = req?.query?.email;
+  const cart = await Cart.findOne({ email })
+    .populate({
+      path: "items.productId", // Populate the product_id field directly
+    })
+    .lean();
+
+  if (!cart) {
+    return res.status(404).json({ message: "Cart not found for the user" });
+  }
+  // Return the array of product details
+  res.status(200).json({ items: cart.items });
+};
+
+// Sold products
+const addSoldProducts = async (req, res) => {
+  const email = req?.query?.email;
+  const cart = await Cart.findOne({ email }).populate({
+    path: "items.productId", // Populate the product_id field directly
+  });
+
+  if (!cart) {
+    return res.status(404).json({ message: "Cart not found for the user" });
+  }
+  // Create entries in SoldProduct collection and update Product collection
+  const soldProducts = await Promise.all(
+    cart.items.map(async (item) => {
+      const soldProduct = new SoldProduct({
+        userEmail: email,
+        productId: item.productId._id,
+        quantity: item.quantity,
+      });
+      await soldProduct.save();
+
+      // Update product sales_count
+      await Product.updateOne(
+        { _id: item.productId._id },
+        {
+          $inc: {
+            sale_count: parseInt(item.quantity, 10),
+            quantity: parseInt(-item.quantity),
+          },
+        }
+      );
+      return soldProduct;
+    })
+  );
+  // Clear the user's cart
+  await Cart.updateOne({ email }, { $set: { items: [] } });
+
+  // Return the sold products
+  res.status(200).json({ message: "Checkout successful!", soldProducts });
+};
+
+// Get Sold products
+const getSoldProducts = async (req, res) => {
+  const email = req.params.email;
+  const soldProducts = await SoldProduct.find({ userEmail: email }).populate(
+    "productId"
+  );
+  res.send(soldProducts);
+};
+const calculateTotal = async (req, res) => {
+  const { email } = req.params;
+
+  const aggregationPipeline = [
+    // Match documents for the specified user
+    { $match: { userEmail: email } },
+    {
+      $lookup: {
+        from: "products",
+        localField: "productId",
+        foreignField: "_id",
+        as: "soldProducts",
+      },
+    },
+    {
+      $unwind: "$soldProducts",
+    },
+    {
+      $group: {
+        _id: "$soldProducts._id",
+        sale_count: { $sum: "$soldProducts.sale_count" },
+        revenue: { $sum: "$soldProducts.profitAmount" },
+        production_cost: { $sum: "$soldProducts.production_cost" },
+        selling_price: { $sum: "$soldProducts.selling_price" },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        sale_count: 1,
+        totalProfit: { $multiply: ["$sale_count", "$revenue"] },
+        totalProductCost: { $multiply: ["$sale_count", "$production_cost"] },
+        totalSellingPrice: { $multiply: ["$sale_count", "$selling_price"] },
+      },
+    },
+    // Additional stages if needed
+    {
+      $group: {
+        _id: null,
+        totalProfit: { $sum: "$totalProfit" },
+        totalProductionCost: { $sum: "$totalProductCost" },
+        totalSellingPrice: { $sum: "$totalSellingPrice" },
+      },
+    },
+  ];
+
+  const result = await SoldProduct.aggregate(aggregationPipeline);
+
+  // Extract the calculated totals from the result
+  const totals =
+    result.length > 0
+      ? result[0]
+      : { totalSellingPrice: 0, totalProductionCost: 0, totalProfit: 0 };
+
+  res.status(200).json({ totals });
+};
 // exports all controllers
 module.exports = {
   addProduct,
@@ -309,9 +319,10 @@ module.exports = {
   getSigleProduct,
   updateProduct,
   deleteProduct,
-  addTocheckOut,
-  getCheckOutProduct,
-  addInvoice,
   soldProducts,
-  getSoldProductsDetails,
+  addToCart,
+  getCartItems,
+  addSoldProducts,
+  getSoldProducts,
+  calculateTotal,
 };

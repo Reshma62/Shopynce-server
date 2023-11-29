@@ -22,23 +22,23 @@ const prodructSchema = new Schema({
     // required: true,
   },
   quantity: {
-    type: String,
+    type: Number,
     required: true,
   },
   production_cost: {
-    type: String,
+    type: Number,
     required: true,
   },
   profitPercent: {
-    type: String,
+    type: Number,
     required: true,
   },
   profitAmount: {
-    type: String,
+    type: Number,
     required: true,
   },
   discount: {
-    type: String,
+    type: Number,
     required: true,
   },
 

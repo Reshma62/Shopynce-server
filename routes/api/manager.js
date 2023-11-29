@@ -6,11 +6,13 @@ const {
   getSigleProduct,
   updateProduct,
   deleteProduct,
-  addTocheckOut,
-  getCheckOutProduct,
-  addInvoice,
   soldProducts,
-  getSoldProductsDetails,
+
+  getCartItems,
+  addSoldProducts,
+  getSoldProducts,
+  calculateTotal,
+  addToCart,
 } = require("../../controller/ProductController");
 const upload = require("../../middleware/uploadImage");
 const verifiToken = require("../../middleware/verifiToken");
@@ -32,15 +34,18 @@ _.post("/add-product", upload.single("product_image"), verifiToken, addProduct);
 _.delete("/delete-product/:id", verifiToken, deleteProduct);
 
 // check out route
-_.get("/get-checkout", verifiToken, getCheckOutProduct);
-_.post("/add-to-checkout", verifiToken, addTocheckOut);
+_.get("/get-cart-items", verifiToken, getCartItems);
+_.post("/add-to-cart", verifiToken, addToCart);
 
-// Invoice or get paid
-_.post("/invoice", verifiToken, addInvoice);
+// Invoice or sale products
+_.get("/get-sold-products/:email", verifiToken, getSoldProducts);
+_.post("/sold-products", verifiToken, addSoldProducts);
 _.get("/sold-products", soldProducts);
-_.get("/sold-products-all", getSoldProductsDetails);
-//Payment intent
 
+// _.get("/sold-products-all", getSoldProductsDetails);
+_.get("/calculate-totals/:email", calculateTotal);
+
+//Payment intent
 _.post("/create-payment-intent", paymentStripe);
 _.post("/payments", payments);
 

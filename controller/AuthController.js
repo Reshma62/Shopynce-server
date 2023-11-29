@@ -17,10 +17,8 @@ const createToken = async (req, res) => {
   res
     .cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      /*  secure: process.env.NODE_ENV === "production" ? true : false,
-      // sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",*/
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     })
     .send({ success: true });
 };
