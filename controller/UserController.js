@@ -51,8 +51,16 @@ const createOwnShop = async (req, res) => {
   );
 };
 
+// Get OWn shop
+const getOwnShop = async (req, res) => {
+  const email = req.params.email;
+  const shop = await CreateShop.findOne({ email: email });
+  res.send(shop);
+};
+
 // all controllers are exports
 module.exports = {
   createUser,
   createOwnShop,
+  getOwnShop,
 };

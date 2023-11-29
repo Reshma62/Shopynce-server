@@ -29,7 +29,11 @@ const prodructSchema = new Schema({
     type: String,
     required: true,
   },
-  profit: {
+  profitPercent: {
+    type: String,
+    required: true,
+  },
+  profitAmount: {
     type: String,
     required: true,
   },
@@ -43,6 +47,10 @@ const prodructSchema = new Schema({
     default: 0,
   },
   selling_price: {
+    type: Number,
+    default: 0,
+  },
+  selling_price_with_discount: {
     type: Number,
     default: 0,
   },

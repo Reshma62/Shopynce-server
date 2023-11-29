@@ -9,6 +9,8 @@ const {
   addTocheckOut,
   getCheckOutProduct,
   addInvoice,
+  soldProducts,
+  getSoldProductsDetails,
 } = require("../../controller/ProductController");
 const upload = require("../../middleware/uploadImage");
 const verifiToken = require("../../middleware/verifiToken");
@@ -35,9 +37,10 @@ _.post("/add-to-checkout", verifiToken, addTocheckOut);
 
 // Invoice or get paid
 _.post("/invoice", verifiToken, addInvoice);
-
+_.get("/sold-products", soldProducts);
+_.get("/sold-products-all", getSoldProductsDetails);
 //Payment intent
-// payment intent
+
 _.post("/create-payment-intent", paymentStripe);
 _.post("/payments", payments);
 

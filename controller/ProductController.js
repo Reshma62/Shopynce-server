@@ -18,16 +18,18 @@ const addProduct = async (req, res) => {
       discount,
     } = req.body;
     const taxPercentage = 7.5; // 7.5% tax
+    // 700 / 100 * 10
     const taxAmount =
-      (parseFloat(production_cost) * parseFloat(taxPercentage)) / 100;
+      (parseFloat(production_cost) / 100) * parseFloat(taxPercentage);
     const discountAmount =
       (parseFloat(production_cost) * parseFloat(discount)) / 100;
     const profitAmount =
       (parseFloat(production_cost) * parseFloat(profit)) / 100;
     const sellingPrice = parseFloat(production_cost) + taxAmount + profitAmount;
+    const sellingPriceAfterDiscount = sellingPrice - discountAmount;
 
+    const profitAfterSale = sellingPrice - parseFloat(production_cost);
     const userEmail = req.user?.email;
-
     // Find the user based on the email
     const user = await User.findOne({ email: userEmail });
 
@@ -58,11 +60,13 @@ const addProduct = async (req, res) => {
         product_image: `/uploads/${req?.file?.filename}`,
         quantity,
         production_cost,
-        profit: profitAmount,
+        profitPercent: profitAmount,
+        profitAmount: profitAfterSale,
         discount: discountAmount,
         selling_price: sellingPrice,
         shop_by_id: shop._id,
         userEmail: user.email,
+        selling_price_with_discount: sellingPriceAfterDiscount,
       });
 
       // Save the product to the database
@@ -174,10 +178,24 @@ const getCheckOutProduct = async (req, res) => {
 
 // Add product to getpaid  or Invoice route
 
-const createInvoice = async (checkoutProducts) => {
-  const newInvoice = new GetPaid({ checkOutsProductId: checkoutProducts });
+const createInvoice = async (checkOutsProductId, userEmail) => {
+  const isExitsCollection = await GetPaid.findOne({ userEmail });
+  /* if (isExitsCollection) {
+    // If the document exists, update it
+    return await GetPaid.findOneAndUpdate(
+      { userEmail },
+      { $push: { checkOutsProductId: checkOutsProductId } },
+      { new: true }
+    );
+  } else { */
+  // If the document doesn't exist, create a new one
+  const newInvoice = new GetPaid({
+    checkOutsProductId,
+    userEmail,
+  });
   await newInvoice.save();
   return newInvoice;
+  // }
 };
 
 const updateProductSales = async (checkoutProducts) => {
@@ -203,23 +221,6 @@ const updateProductSales = async (checkoutProducts) => {
   }
 };
 
-const clearCheckoutCollection = async (userEmail) => {
-  const checkoutProducts = await CheckOUt.find({})
-    .populate({
-      path: "productId",
-      match: { userEmail: userEmail },
-    })
-    .exec();
-
-  // Perform any additional logic or processing if needed
-
-  // Clear the checkout collection
-  await CheckOUt.deleteMany({ userEmail: userEmail });
-
-  // Return the filtered checkout products if needed
-  return checkoutProducts;
-};
-
 const addInvoice = async (req, res) => {
   try {
     const userEmail = req?.user?.email;
@@ -234,8 +235,8 @@ const addInvoice = async (req, res) => {
     const filteredProducts = checkoutProducts.filter(
       (checkout) => checkout.productId !== null
     );
-
-    const newInvoice = createInvoice(filteredProducts);
+    const productId = filteredProducts.map((product) => product.productId);
+    const newInvoice = createInvoice(productId, userEmail);
 
     await updateProductSales(filteredProducts);
 
@@ -245,7 +246,7 @@ const addInvoice = async (req, res) => {
     );
 
     // Clear the checkout collection based on the IDs
-    await CheckOUt.deleteMany({ _id: { $in: checkoutIdsToDelete } });
+    // await CheckOUt.deleteMany({ _id: { $in: checkoutIdsToDelete } });
 
     res.send({ success: "Payment successful", invoice: newInvoice });
   } catch (error) {
@@ -253,6 +254,53 @@ const addInvoice = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+const soldProducts = async (req, res) => {
+  const userEmail = req?.query?.email;
+  const perPage = parseInt(req?.query?.perPage);
+  const size = parseInt(req?.query?.size);
+  const skip = perPage * size;
+  console.log("perPage", perPage);
+  console.log("size", size);
+  console.log("skip", size);
+  const soldProduct = await GetPaid.find({ userEmail })
+    .populate({
+      path: "checkOutsProductId",
+    })
+    .exec();
+  res.send(soldProduct);
+};
+
+async function getSoldProductsDetails(req, res) {
+  try {
+    const { limit, skip } = req?.query;
+    const limitValue = parseInt(limit) || 10; // Default to 10 if not provided
+    const skipValue = parseInt(skip) || 0;
+    const orders = await GetPaid.find()
+      .populate("checkOutsProductId")
+      .limit(limitValue)
+      .skip(skipValue);
+
+    // Extract and format sold product details
+    const soldProductsDetails = orders.reduce((acc, order) => {
+      order.checkOutsProductId.forEach((product) => {
+        acc.push({
+          name: product.name,
+          quantity: product.quantity, // Assuming you have a quantity field in your products array
+          profit: product.profitAmount, // Assuming you have a profit field in your products array
+          soldDate: order.createdAt,
+        });
+      });
+      return acc;
+      return order;
+    }, []);
+
+    res.status(200).json(soldProductsDetails);
+  } catch (error) {
+    console.error("Error getting sold products details:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
 
 // exports all controllers
 module.exports = {
@@ -264,4 +312,6 @@ module.exports = {
   addTocheckOut,
   getCheckOutProduct,
   addInvoice,
+  soldProducts,
+  getSoldProductsDetails,
 };

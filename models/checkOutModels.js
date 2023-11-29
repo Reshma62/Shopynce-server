@@ -5,6 +5,17 @@ const checkOutSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Product",
   },
+
+  userId: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 const CheckOUt = mongoose.model("CheckOUt", checkOutSchema);
 module.exports = CheckOUt;
