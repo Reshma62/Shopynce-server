@@ -1,3 +1,4 @@
+const CreateShop = require("../models/createShopModels");
 const Product = require("../models/productModels");
 const User = require("../models/userModels");
 const { emailTempalte } = require("../utils/emailTemplate");
@@ -40,9 +41,26 @@ const sendEmailPromotion = async (req, res) => {
   );
   res.send({ success: "promtional Email send" });
 };
+const sendNotice = async (req, res) => {
+  const email = req?.query?.email;
+
+  const emailPromotion = await sendPromotionalEmail(
+    email,
+    emailTempalte(),
+    "Notices from admin"
+  );
+  res.send({ success: "Notice Email send" });
+};
+
+const getAllShop = async (req, res) => {
+  const allShop = await CreateShop.find({});
+  res.send(allShop);
+};
 module.exports = {
   getAllProducts,
   getAdminInfo,
   getAllUser,
   sendEmailPromotion,
+  getAllShop,
+  sendNotice,
 };
