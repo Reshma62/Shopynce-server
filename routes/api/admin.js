@@ -7,10 +7,12 @@ const {
   sendEmailPromotion,
   getAllShop,
   sendNotice,
+  getAllProductsSellingAmount,
 } = require("../../controller/AdminController");
 const { verifiAdmin } = require("../../middleware/verifiAdmin");
 const verifiToken = require("../../middleware/verifiToken");
 _.get("/products", verifiToken, verifiAdmin, getAllProducts);
+_.get("/all-products-sell", getAllProductsSellingAmount);
 _.get("/admin-info", verifiToken, verifiAdmin, getAdminInfo);
 _.get("/all-user-info", verifiToken, getAllUser);
 _.post("/send-promotion", verifiToken, verifiAdmin, sendEmailPromotion);

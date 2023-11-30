@@ -9,6 +9,42 @@ const getAllProducts = async (req, res) => {
 
   res.send(allProducts);
 };
+const getAllProductsSellingAmount = async (req, res) => {
+  const pipeline = [
+    {
+      $group: {
+        _id: "$_id",
+        sale_count: { $sum: "$sale_count" },
+        revenue: { $sum: "$profitAmount" },
+        production_cost: { $sum: "$production_cost" },
+        selling_price: { $sum: "$selling_price" },
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        sale_count: 1,
+        totalProfit: { $multiply: ["$sale_count", "$revenue"] },
+        totalProductCost: { $multiply: ["$sale_count", "$production_cost"] },
+        totalSellingPrice: { $multiply: ["$sale_count", "$selling_price"] },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        totalProfit: { $sum: "$totalProfit" },
+        totalProductionCost: { $sum: "$totalProductCost" },
+        totalSellingPrice: { $sum: "$totalSellingPrice" },
+      },
+    },
+  ];
+  const result = await Product.aggregate(pipeline);
+  const totals =
+    result.length > 0
+      ? result[0]
+      : { totalSellingPrice: 0, totalProductionCost: 0, totalProfit: 0 };
+  res.send({ totals });
+};
 const getAdminInfo = async (req, res) => {
   const email = req.query?.email;
 
@@ -63,4 +99,5 @@ module.exports = {
   sendEmailPromotion,
   getAllShop,
   sendNotice,
+  getAllProductsSellingAmount,
 };
