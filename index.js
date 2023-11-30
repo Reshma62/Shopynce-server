@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 8000;
 const Routes = require("./routes");
 const dbConnect = require("./utils/dbConfige");
 const verifiToken = require("./middleware/verifiToken");
-
+const path = require("path");
 //middleware
 app.use(
   cors({
@@ -16,7 +16,11 @@ app.use(
   })
 );
 app.use(cookieParser());
-app.use(express.static("public"));
+// app.use(express.static("public"));
+app.use(
+  "/public/uploads",
+  express.static(path.join(__dirname, "/public/uploads"))
+);
 app.use(express.json());
 
 app.use(Routes);
