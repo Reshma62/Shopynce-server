@@ -24,10 +24,10 @@ const createUser = async (req, res) => {
 
 // create shop
 const createOwnShop = async (req, res) => {
-  const { name, location, shop_description, email, userName } = await req.body;
+  const { name, location, shop_description, email, userName } = req.body;
   console.log("req?.file", req?.file);
   const exitingUser = await User.findOne({ email });
-
+  console.log("exitingUser", exitingUser);
   const existingShop = await CreateShop.findOne({ email });
   if (existingShop) {
     return res.send({ error: "Only One Shop Created at a time" });
@@ -42,9 +42,9 @@ const createOwnShop = async (req, res) => {
     userId: exitingUser._id,
   });
   createShop.save();
-  // res.send({ success: "Shop successfully created" });
-  res.send(createShop);
-  await User.findByIdAndUpdate(
+  res.send({ success: "Shop successfully created" });
+  console.log(createShop);
+  await User.findOneAndUpdate(
     { _id: createShop.userId },
     { $set: { shopId: createShop._id, role: "manager" } },
     { new: true }
@@ -68,13 +68,10 @@ const getAllShop = async (req, res) => {
 const wantToManager = async (req, res) => {
   const shopId = req.params.id;
   const userEmail = req.query.email;
-  const newShopInfo = {
-    newShopId: shopId,
-    role: "shopAdmin",
-  };
+
   const updateUser = await User.findOneAndUpdate(
     { email: userEmail },
-    { $push: { shopShareAccess: newShopInfo } },
+    { $set: { shopId: shopId, role: "manager" } },
     { new: true }
   );
   res.send(updateUser);

@@ -9,13 +9,11 @@ const {
   sendNotice,
   getAllProductsSellingAmount,
 } = require("../../controller/AdminController");
-const { verifiAdmin } = require("../../middleware/verifiAdmin");
-const verifiToken = require("../../middleware/verifiToken");
-_.get("/products", verifiToken, verifiAdmin, getAllProducts);
+_.get("/products", getAllProducts);
 _.get("/all-products-sell", getAllProductsSellingAmount);
-_.get("/admin-info", verifiToken, verifiAdmin, getAdminInfo);
-_.get("/all-user-info", verifiToken, getAllUser);
-_.post("/send-promotion", verifiToken, verifiAdmin, sendEmailPromotion);
-_.post("/send-notice", verifiToken, verifiAdmin, sendNotice);
-_.get("/all-shop", verifiToken, verifiAdmin, getAllShop);
+_.get("/admin-info", getAdminInfo);
+_.get("/all-user-info", getAllUser);
+_.post("/send-promotion", sendEmailPromotion);
+_.post("/send-notice", sendNotice);
+_.get("/all-shop", getAllShop);
 module.exports = _;

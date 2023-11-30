@@ -7,7 +7,6 @@ const {
   updateProduct,
   deleteProduct,
   soldProducts,
-
   getCartItems,
   addSoldProducts,
   getSoldProducts,
@@ -16,40 +15,37 @@ const {
   getAllSoldCount,
 } = require("../../controller/ProductController");
 const upload = require("../../middleware/uploadImage");
-const verifiToken = require("../../middleware/verifiToken");
 const {
   paymentStripe,
   payments,
 } = require("../../controller/PaymentController");
-const { verifiManager } = require("../../middleware/verifiManager");
 
 // routes for Product manage
-_.get("/get-all-product", verifiToken, verifiManager, getAllProduct);
-_.get("/get-single-product", verifiToken, verifiManager, getSigleProduct);
+_.get("/get-all-product", getAllProduct);
+_.get("/get-single-product", getSigleProduct);
 _.put(
   "/get-single-product/:id",
   upload.single("product_image"),
-  verifiToken,
+
   updateProduct
 );
 _.post(
   "/add-product",
   upload.single("product_image"),
-  verifiToken,
-  verifiManager,
+
   addProduct
 );
-_.delete("/delete-product/:id", verifiToken, verifiManager, deleteProduct);
+_.delete("/delete-product/:id", deleteProduct);
 
 // check out route
-_.get("/get-cart-items", verifiToken, getCartItems);
-_.post("/add-to-cart", verifiToken, addToCart);
+_.get("/get-cart-items", getCartItems);
+_.post("/add-to-cart", addToCart);
 
 // Invoice or sale products
-_.get("/get-sold-products/:email", verifiToken, verifiManager, getSoldProducts);
-_.post("/sold-products", verifiToken, addSoldProducts);
-_.get("/sold-products", verifiToken, verifiManager, soldProducts);
-_.get("/sold-count", verifiToken, getAllSoldCount);
+_.get("/get-sold-products/:email", getSoldProducts);
+_.post("/sold-products", addSoldProducts);
+_.get("/sold-products", soldProducts);
+_.get("/sold-count", getAllSoldCount);
 
 // _.get("/sold-products-all", getSoldProductsDetails);
 _.get("/calculate-totals/:email", calculateTotal);

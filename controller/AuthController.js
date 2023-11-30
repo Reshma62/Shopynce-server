@@ -12,31 +12,27 @@ const getUser = async (req, res) => {
 const createToken = async (req, res) => {
   const userEmail = req.body;
   const token = jwt.sign(userEmail, process.env.SECRET_KEY, {
-    expiresIn: "1000h",
+    expiresIn: "1h",
   });
-  res
-    .cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production" ? true : false,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-    })
-    .send({ success: true });
+
+  res.send({ token });
 };
 
 // Delete Token
-const deleteToken = async (req, res) => {
+/* const deleteToken = async (req, res) => {
   res
     .clearCookie("token", {
       maxAge: 0,
-      secure: process.env.NODE_ENV === "production" ? true : false,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+           secure: process.env.NODE_ENV === "production" ? true : false,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict", 
+      secure: false,
+      sameSite: "strict",
     })
     .send({ success: true });
-};
+}; */
 
 // all controllers exports
 module.exports = {
   getUser,
   createToken,
-  deleteToken,
 };

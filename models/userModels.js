@@ -20,12 +20,6 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "CreateShop",
   },
-  shopShareAccess: [
-    {
-      newShopId: { type: Schema.Types.ObjectId, ref: "CreateShop" },
-      role: { type: String },
-    },
-  ],
 });
 const User = mongoose.model("User", userSchema);
 module.exports = User;

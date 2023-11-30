@@ -32,7 +32,7 @@ const addProduct = async (req, res) => {
     const sellingPriceAfterDiscount = sellingPrice - discountAmount;
 
     const profitAfterSale = sellingPrice - parseFloat(production_cost);
-    const userEmail = req.user?.email;
+    const userEmail = req.query?.email;
     // Find the user based on the email
     const user = await User.findOne({ email: userEmail });
 
@@ -75,7 +75,7 @@ const addProduct = async (req, res) => {
       // Save the product to the database
       await product.save();
       // Update the products array in the CreateShop collection
-      await CreateShop.findByIdAndUpdate(
+      await CreateShop.findOneAndUpdate(
         { _id: shop._id },
         { $push: { products: product._id } },
         { new: true }
@@ -90,7 +90,7 @@ const addProduct = async (req, res) => {
 
 // get all products for logged in user
 const getAllProduct = async (req, res) => {
-  const queryEmail = req.user?.email;
+  const queryEmail = req.query?.email;
   let query = { userEmail: queryEmail };
 
   const allProduct = await Product.find(query);
@@ -139,7 +139,7 @@ const deleteProduct = async (req, res) => {
   const shop = await CreateShop.findById(productFind.shop_by_id);
   console.log("shop", shop);
   const product = await Product.findOneAndDelete({ _id: id });
-  await CreateShop.findByIdAndUpdate(
+  await CreateShop.findOneAndUpdate(
     { _id: shop._id },
     { $pull: { products: id } },
     { new: true }
@@ -168,7 +168,7 @@ const addToCart = async (req, res) => {
   const { email, productId, quantity } = req.body;
   // Check if the user already has a cart
   let cart = await Cart.findOne({ email });
-
+  console.log(email, productId, quantity, "object");
   // If the user doesn't have a cart, create a new one
   if (!cart) {
     cart = await Cart.create({ email });
@@ -184,12 +184,9 @@ const addToCart = async (req, res) => {
     // If the product is not in the cart, add a new item
     cart.items.push({ productId, quantity });
   }
-
   // Save the updated cart
   await cart.save();
-  res
-    .status(200)
-    .json({ message: "Item added to the cart successfully", cart });
+  res.status(200).json({ message: "Item added to the cart successfully" });
 };
 
 // get cart data
