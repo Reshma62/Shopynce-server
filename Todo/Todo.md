@@ -1,4 +1,4 @@
-// TODO: HOME PAGE
+firebase deploy
 
 // BONOUS
 // TODO: RESPONSIVENESS

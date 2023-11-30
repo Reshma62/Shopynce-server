@@ -57,10 +57,15 @@ const getOwnShop = async (req, res) => {
   const shop = await CreateShop.findOne({ email: email });
   res.send(shop);
 };
+const getAllShop = async (req, res) => {
+  const shop = await CreateShop.find({});
+  res.send(shop);
+};
 
 // all controllers are exports
 module.exports = {
   createUser,
   createOwnShop,
   getOwnShop,
+  getAllShop,
 };
