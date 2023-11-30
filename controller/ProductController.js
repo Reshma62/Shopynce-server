@@ -19,6 +19,7 @@ const addProduct = async (req, res) => {
       production_cost,
       profit,
       discount,
+      product_image,
     } = req.body;
     const taxPercentage = 7.5; // 7.5% tax
     // 700 / 100 * 10
@@ -60,7 +61,7 @@ const addProduct = async (req, res) => {
         name,
         location,
         product_description,
-        product_image: `/uploads/${req?.file?.filename}`,
+        product_image,
         quantity,
         production_cost,
         profitPercent: profitAmount,
@@ -115,12 +116,13 @@ const updateProduct = async (req, res) => {
     production_cost,
     profit,
     discount,
+    product_image,
   } = req.body;
   const updatedProduct = {
     name: product_name,
     location: product_location,
     product_description: product_desc,
-    product_image: `/uploads/${req?.file?.filename}`,
+    product_image,
     quantity,
     production_cost,
     profit,
