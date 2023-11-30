@@ -11,7 +11,11 @@ const path = require("path");
 //middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://shopynce.web.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://shopynce.web.app",
+      "https://shopynce.web.app/public",
+    ],
     credentials: true,
   })
 );

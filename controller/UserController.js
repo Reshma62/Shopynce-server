@@ -57,9 +57,27 @@ const getOwnShop = async (req, res) => {
   const shop = await CreateShop.findOne({ email: email });
   res.send(shop);
 };
+
+// Get all shop Ids
 const getAllShop = async (req, res) => {
   const shop = await CreateShop.find({});
   res.send(shop);
+};
+
+// want to manager updat user information
+const wantToManager = async (req, res) => {
+  const shopId = req.params.id;
+  const userEmail = req.query.email;
+  const newShopInfo = {
+    newShopId: shopId,
+    role: "shopAdmin",
+  };
+  const updateUser = await User.findOneAndUpdate(
+    { email: userEmail },
+    { $push: { shopShareAccess: newShopInfo } },
+    { new: true }
+  );
+  res.send(updateUser);
 };
 
 // all controllers are exports
@@ -68,4 +86,5 @@ module.exports = {
   createOwnShop,
   getOwnShop,
   getAllShop,
+  wantToManager,
 };

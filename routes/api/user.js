@@ -5,12 +5,14 @@ const {
   createOwnShop,
   getOwnShop,
   getAllShop,
+  wantToManager,
 } = require("../../controller/UserController");
 const upload = require("../../middleware/uploadImage");
 const { verifiManager } = require("../../middleware/verifiManager");
 _.get("/shop/:email", getOwnShop);
-_.get("/shop", verifiManager, getAllShop);
+_.get("/all-shop", getAllShop);
 _.post("/create-user", createUser);
+_.put("/want-to-manager/:id", wantToManager);
 _.post("/create-shop", upload.single("shop_logo"), createOwnShop);
 module.exports = _;
 // /user/create-user
