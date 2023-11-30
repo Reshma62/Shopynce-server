@@ -14,10 +14,8 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://shopynce.web.app",
-      "https://shopynce.web.app/public",
       "https://api.imgbb.com",
     ],
-    credentials: true,
   })
 );
 app.use(cookieParser());
