@@ -29,8 +29,7 @@ const addProduct = async (req, res) => {
       (parseFloat(production_cost) * parseFloat(discount)) / 100;
     const profitAmount =
       (parseFloat(production_cost) * parseFloat(profit)) / 100;
-    console.log("profitAmount", profitAmount);
-    console.log("discountAmount", discountAmount);
+
     const sellingPrice = parseFloat(production_cost) + taxAmount + profitAmount;
     const sellingPriceAfterDiscount = sellingPrice - discountAmount;
 
@@ -130,8 +129,7 @@ const updateProduct = async (req, res) => {
   const discountAmount =
     (parseFloat(production_cost) * parseFloat(discount)) / 100;
   const profitAmount = (parseFloat(production_cost) * parseFloat(profit)) / 100;
-  console.log("profitAmount", profitAmount);
-  console.log("discountAmount", discountAmount);
+
   const sellingPrice = parseFloat(production_cost) + taxAmount + profitAmount;
   const sellingPriceAfterDiscount = sellingPrice - discountAmount;
   const profitAfterSale = sellingPrice - parseFloat(production_cost);
