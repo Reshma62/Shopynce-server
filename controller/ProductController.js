@@ -312,29 +312,38 @@ const calculateTotal = async (req, res) => {
     },
     {
       $group: {
-        _id: "$soldProducts._id",
-        sale_count: { $sum: "$soldProducts.sale_count" },
-        revenue: { $sum: "$soldProducts.profitAmount" },
-        production_cost: { $sum: "$soldProducts.production_cost" },
-        selling_price: { $sum: "$soldProducts.selling_price" },
+        _id: "$_id", // Group by the sale document id
+        userEmail: { $first: "$userEmail" },
+        totalQuantity: { $sum: "$quantity" },
+        totalProfit: {
+          $sum: { $multiply: ["$quantity", "$soldProducts.profitAfterSale"] },
+        },
+        totalProductionCost: {
+          $sum: { $multiply: ["$quantity", "$soldProducts.production_cost"] },
+        },
+        totalSellingPrice: {
+          $sum: { $multiply: ["$quantity", "$soldProducts.selling_price"] },
+        },
       },
     },
-    {
-      $project: {
-        _id: 1,
-        sale_count: 1,
-        totalProfit: { $multiply: ["$sale_count", "$revenue"] },
-        totalProductCost: { $multiply: ["$sale_count", "$production_cost"] },
-        totalSellingPrice: { $multiply: ["$sale_count", "$selling_price"] },
-      },
-    },
-    // Additional stages if needed
     {
       $group: {
-        _id: null,
+        _id: "$userEmail", // Group by user email
+        totalQuantity: { $sum: "$totalQuantity" },
         totalProfit: { $sum: "$totalProfit" },
-        totalProductionCost: { $sum: "$totalProductCost" },
+        totalProductionCost: { $sum: "$totalProductionCost" },
         totalSellingPrice: { $sum: "$totalSellingPrice" },
+      },
+    },
+
+    {
+      $project: {
+        _id: 0,
+        userEmail: "$_id",
+        // totalQuantity: 1,
+        totalProfit: 1,
+        totalProductionCost: 1,
+        totalSellingPrice: 1,
       },
     },
   ];
