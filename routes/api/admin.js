@@ -8,6 +8,7 @@ const {
   getAllShop,
   sendNotice,
   getAllProductsSellingAmount,
+  getAllUserCount,
 } = require("../../controller/AdminController");
 _.get("/products", getAllProducts);
 _.get("/all-products-sell", getAllProductsSellingAmount);
@@ -16,4 +17,5 @@ _.get("/all-user-info", getAllUser);
 _.post("/send-promotion", sendEmailPromotion);
 _.post("/send-notice", sendNotice);
 _.get("/all-shop", getAllShop);
+_.get("/user-count", getAllUserCount);
 module.exports = _;

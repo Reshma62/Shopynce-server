@@ -67,6 +67,10 @@ const getAllUser = async (req, res) => {
     .limit(limit);
   return res.send(userInfo);
 };
+const getAllUserCount = async (req, res) => {
+  const allUsers = await User.countDocuments();
+  res.send({ count: allUsers });
+};
 const sendEmailPromotion = async (req, res) => {
   const email = req?.query?.email;
 
@@ -100,4 +104,5 @@ module.exports = {
   getAllShop,
   sendNotice,
   getAllProductsSellingAmount,
+  getAllUserCount,
 };
