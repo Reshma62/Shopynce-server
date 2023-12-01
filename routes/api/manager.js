@@ -14,7 +14,6 @@ const {
   addToCart,
   getAllSoldCount,
 } = require("../../controller/ProductController");
-const upload = require("../../middleware/uploadImage");
 const {
   paymentStripe,
   payments,

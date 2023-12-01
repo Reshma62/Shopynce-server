@@ -7,7 +7,6 @@ const {
   getAllShop,
   wantToManager,
 } = require("../../controller/UserController");
-const upload = require("../../middleware/uploadImage");
 const { verifiManager } = require("../../middleware/verifiManager");
 _.get("/shop/:email", getOwnShop);
 _.get("/all-shop", getAllShop);

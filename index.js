@@ -11,24 +11,15 @@ const path = require("path");
 //middleware
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://shopynce.web.app",
-      "https://api.imgbb.com",
-    ],
+    origin: ["http://localhost:5173", "https://shopynce.web.app"],
   })
 );
 app.use(cookieParser());
-// app.use(express.static("public"));
-/* app.use(
-  "/public/uploads",
-  express.static(path.join(__dirname, "/public/uploads"))
-); */
+
 app.use(express.json());
 
 app.use(Routes);
 app.get("/health", function (req, res) {
-  // console.log(req?.cookies?.token);
   res.send("server health is ok ");
 });
 
