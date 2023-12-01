@@ -24,7 +24,8 @@ const createUser = async (req, res) => {
 
 // create shop
 const createOwnShop = async (req, res) => {
-  const { name, location, shop_description, email, userName } = req.body;
+  const { name, location, shop_description, email, userName, shop_logo } =
+    req.body;
   console.log("req?.file", req?.file);
   const exitingUser = await User.findOne({ email });
   console.log("exitingUser", exitingUser);
@@ -36,14 +37,14 @@ const createOwnShop = async (req, res) => {
     name,
     location,
     shop_description,
-    shop_logo: "",
+    shop_logo,
     email,
     userName,
     userId: exitingUser._id,
   });
-  createShop.save();
-  res.send({ success: "Shop successfully created" });
-  console.log(createShop);
+  await createShop.save();
+  res.send({ success: "Shop successfully created", createShop });
+
   await User.findOneAndUpdate(
     { _id: createShop.userId },
     { $set: { shopId: createShop._id, role: "manager" } },

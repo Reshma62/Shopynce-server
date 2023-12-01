@@ -25,16 +25,10 @@ _.get("/get-all-product", getAllProduct);
 _.get("/get-single-product", getSigleProduct);
 _.put(
   "/get-single-product/:id",
-  upload.single("product_image"),
 
   updateProduct
 );
-_.post(
-  "/add-product",
-  upload.single("product_image"),
-
-  addProduct
-);
+_.post("/add-product", addProduct);
 _.delete("/delete-product/:id", deleteProduct);
 
 // check out route

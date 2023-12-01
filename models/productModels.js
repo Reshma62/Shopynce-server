@@ -37,6 +37,10 @@ const prodructSchema = new Schema({
     type: Number,
     required: true,
   },
+  discountPrecent: {
+    type: Number,
+    required: true,
+  },
   discount: {
     type: Number,
     required: true,
@@ -54,10 +58,15 @@ const prodructSchema = new Schema({
     type: Number,
     default: 0,
   },
+  profitAfterSale: {
+    type: Number,
+    default: 0,
+  },
   createdAt: {
     type: Date,
     default: Date.now(),
   },
+
   shop_by_id: {
     type: Schema.Types.ObjectId,
     ref: "CreateShop",

@@ -29,10 +29,13 @@ const addProduct = async (req, res) => {
       (parseFloat(production_cost) * parseFloat(discount)) / 100;
     const profitAmount =
       (parseFloat(production_cost) * parseFloat(profit)) / 100;
+    console.log("profitAmount", profitAmount);
+    console.log("discountAmount", discountAmount);
     const sellingPrice = parseFloat(production_cost) + taxAmount + profitAmount;
     const sellingPriceAfterDiscount = sellingPrice - discountAmount;
 
     const profitAfterSale = sellingPrice - parseFloat(production_cost);
+
     const userEmail = req.query?.email;
     // Find the user based on the email
     const user = await User.findOne({ email: userEmail });
@@ -61,16 +64,18 @@ const addProduct = async (req, res) => {
         name,
         location,
         product_description,
-        product_image: "",
+        product_image,
         quantity,
         production_cost,
-        profitPercent: profitAmount,
-        profitAmount: profitAfterSale,
+        profitPercent: profit,
+        profitAmount: profitAmount,
+        discountPrecent: discount,
         discount: discountAmount,
         selling_price: sellingPrice,
         shop_by_id: shop._id,
         userEmail: user.email,
         selling_price_with_discount: sellingPriceAfterDiscount,
+        profitAfterSale,
       });
 
       // Save the product to the database
@@ -118,15 +123,32 @@ const updateProduct = async (req, res) => {
     discount,
     product_image,
   } = req.body;
+  const taxPercentage = 7.5; // 7.5% tax
+
+  const taxAmount =
+    (parseFloat(production_cost) / 100) * parseFloat(taxPercentage);
+  const discountAmount =
+    (parseFloat(production_cost) * parseFloat(discount)) / 100;
+  const profitAmount = (parseFloat(production_cost) * parseFloat(profit)) / 100;
+  console.log("profitAmount", profitAmount);
+  console.log("discountAmount", discountAmount);
+  const sellingPrice = parseFloat(production_cost) + taxAmount + profitAmount;
+  const sellingPriceAfterDiscount = sellingPrice - discountAmount;
+  const profitAfterSale = sellingPrice - parseFloat(production_cost);
   const updatedProduct = {
     name: product_name,
     location: product_location,
     product_description: product_desc,
-    product_image: "",
+    product_image,
     quantity,
     production_cost,
-    profit,
-    discount,
+    profitPercent: profit,
+    profitAmount: profitAmount,
+    discountPrecent: discount,
+    discount: discountAmount,
+    selling_price: sellingPrice,
+    selling_price_with_discount: sellingPriceAfterDiscount,
+    profitAfterSale,
   };
   const product = await Product.findOneAndUpdate({ _id: id }, updatedProduct, {
     new: true,
@@ -139,7 +161,7 @@ const deleteProduct = async (req, res) => {
   const id = req.params.id;
   const productFind = await Product.findById(id);
   const shop = await CreateShop.findById(productFind.shop_by_id);
-  console.log("shop", shop);
+
   const product = await Product.findOneAndDelete({ _id: id });
   await CreateShop.findOneAndUpdate(
     { _id: shop._id },
@@ -154,9 +176,7 @@ const soldProducts = async (req, res) => {
   const perPage = parseInt(req?.query?.perPage);
   const size = parseInt(req?.query?.size);
   const skip = perPage * size;
-  console.log("perPage", perPage);
-  console.log("size", size);
-  console.log("skip", size);
+
   const soldProduct = await GetPaid.find({ userEmail })
     .populate({
       path: "checkOutsProductId",
@@ -170,7 +190,6 @@ const addToCart = async (req, res) => {
   const { email, productId, quantity } = req.body;
   // Check if the user already has a cart
   let cart = await Cart.findOne({ email });
-  console.log(email, productId, quantity, "object");
   // If the user doesn't have a cart, create a new one
   if (!cart) {
     cart = await Cart.create({ email });

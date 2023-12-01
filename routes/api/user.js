@@ -13,6 +13,6 @@ _.get("/shop/:email", getOwnShop);
 _.get("/all-shop", getAllShop);
 _.post("/create-user", createUser);
 _.put("/want-to-manager/:id", wantToManager);
-_.post("/create-shop", upload.single("shop_logo"), createOwnShop);
+_.post("/create-shop", createOwnShop);
 module.exports = _;
 // /user/create-user
