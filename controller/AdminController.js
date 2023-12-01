@@ -1,5 +1,6 @@
 const CreateShop = require("../models/createShopModels");
 const Product = require("../models/productModels");
+const SoldProduct = require("../models/soldProductModels");
 const User = require("../models/userModels");
 const { emailTempalte } = require("../utils/emailTemplate");
 const { sendPromotionalEmail } = require("../utils/sendEmails");
@@ -12,33 +13,42 @@ const getAllProducts = async (req, res) => {
 const getAllProductsSellingAmount = async (req, res) => {
   const pipeline = [
     {
-      $group: {
-        _id: "$_id",
-        sale_count: { $sum: "$sale_count" },
-        revenue: { $sum: "$profitAmount" },
-        production_cost: { $sum: "$production_cost" },
-        selling_price: { $sum: "$selling_price" },
+      $lookup: {
+        from: "products",
+        localField: "productId",
+        foreignField: "_id",
+        as: "soldProducts",
       },
     },
     {
-      $project: {
-        _id: 1,
-        sale_count: 1,
-        totalProfit: { $multiply: ["$sale_count", "$revenue"] },
-        totalProductCost: { $multiply: ["$sale_count", "$production_cost"] },
-        totalSellingPrice: { $multiply: ["$sale_count", "$selling_price"] },
-      },
+      $unwind: "$soldProducts",
     },
     {
       $group: {
         _id: null,
-        totalProfit: { $sum: "$totalProfit" },
-        totalProductionCost: { $sum: "$totalProductCost" },
-        totalSellingPrice: { $sum: "$totalSellingPrice" },
+        totalQuantity: { $sum: "$quantity" },
+        totalProfit: {
+          $sum: { $multiply: ["$quantity", "$soldProducts.profitAfterSale"] },
+        },
+        totalProductionCost: {
+          $sum: { $multiply: ["$quantity", "$soldProducts.production_cost"] },
+        },
+        totalSellingPrice: {
+          $sum: { $multiply: ["$quantity", "$soldProducts.selling_price"] },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalQuantity: 1,
+        totalProfit: 1,
+        totalProductionCost: 1,
+        totalSellingPrice: 1,
       },
     },
   ];
-  const result = await Product.aggregate(pipeline);
+  const result = await SoldProduct.aggregate(pipeline);
   const totals =
     result.length > 0
       ? result[0]
